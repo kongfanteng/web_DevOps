@@ -670,7 +670,7 @@ cd /etc/rc3.d && ll
 ../init.d/mumad # 86
 ```
 
-## 5、shell: 进程管理_工作管理_系统资源查看_配置 IP 地址_搭建 FTP 服务器
+## 5、shell: 进程管理_工作管理_系统资源查看_配置 IP 地址_搭建 FTP 服务器_SSH
 
 ### 5.1 进程管理
 
@@ -803,7 +803,7 @@ yum install traceroute -y
 traceroute www.baidu.com
 ```
 
-### 5.5 搭建 FTP 服务器（未测通）
+### 5.5 搭建 FTP 服务器（未测通）_SSH
 
 ```bash
 rpm -q vsftpd
@@ -832,4 +832,10 @@ passwd zhangsan2 zhangsan2
 tcpdump -i ens160 -nnX port 21
 ftp 192.168.0.106 # 电脑端
 systemctl enable vsftpd.service # 开机自启动
+
+## SSH
+ssh root@192.168.110.131
+cd ~/.ssh
+cat ~/.ssh/konwn_hosts
+scp 1.node+vue.xlsx root@192.168.110.131:scp # 本地服务器拷贝到远程服务器
 ```
