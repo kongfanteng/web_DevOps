@@ -586,6 +586,8 @@ volumes:
     driver: local
 ```
 
+docker-compose -f pxc-master.yaml up -d
+
 ### 5.5
 
 ```bash
