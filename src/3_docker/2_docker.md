@@ -19,7 +19,7 @@ devops ALL=(ALL:ALL) ALL
 
 ### 客户端
 ssh-keygen -t rsa -b 4096 -C "1228318390@qq.com"
-cat .ssh/id_rsa.pub
+cat ~/.ssh/id_rsa.pub
 
 ### 服务器端
 ssh-keygen -t rsa -b 4096 -C "1228318390@qq.com"
@@ -369,7 +369,7 @@ docker run -it -d -p 4001:8888 -p 4002:3306 -v /home/devops/haproxy:/usr/local/e
 # 浏览器打开 ip:4001/dbs
 ```
 
-### 3.3
+### 3.3 持续集成和部署_后端项目
 
 ```bash
 # 持续集成和部署
@@ -378,10 +378,12 @@ docker run -it -d -p 4001:8888 -p 4002:3306 -v /home/devops/haproxy:/usr/local/e
 
 # 后端服务(本地)
 cd workspace
-mkdir vue-back && cd vue-back && npm init -y
+mkdir -p /Users/workplace/web_DevOps/public/cicd_projects/vue-back && cd /Users/workplace/web_DevOps/public/cicd_projects/vue-back
+
+npm init -y
 vi server.js
 const http = require('http')
-cont users = [
+const users = [
   { id: 1, name: 'kft1' },
   { id: 2, name: 'kft2' },
 ]
@@ -396,18 +398,22 @@ server.listen(3000, () => {
   console.log('后端 API 接口服务已经启动在 3000 端口！')
 })
 
-echo -e 'node_moudle\nlib\n.idea\n.package-lock.json\nDockerfile\n.dockerignore' > .gitignore
+echo -e 'node_moudle\nlib\n.idea\n.package-lock.json\n.dockerignore' > .gitignore
+
+vi package.json
+"start": "node server.js"
+
 npm run start # 启动
 ```
 
-### 3.4
+### 3.4 前端项目
 
 ```bash
 # 前端项目
-sudo cnpm i @vue/cli -g
-sudo vue create vue-front
+sudo npm install -g @vue/cli
+vue create vue-front
 cd vue-front
-sudo yarn add axios
+yarn add axios
 vi src/App.vue
 v-for="user in users" :key="user.id"
 {{ user.id }}: {{ user.name }}
@@ -416,21 +422,26 @@ import axios from 'axios'
 
 users: []
 
-const { data } = axios.get('http://localhost:3000/api/users')
+const { data } = await axios.get('http://localhost:3000/api/users')
 this.users = data;
-```
-
-### 3.5
-
-```bash
-# CICD 服务器
-mkdir vue-webhook && cd vue-webhook && cnpm init -y
-sudo yarn add nodemailer -S
 
 # 后端项目
 cd vue-back
 res.setHeader('Access-Control-Allow-Origin', '*');
-git remote add origin git@.../vue-back.git
+```
+
+### 3.5 WebHook
+
+```bash
+# CICD 服务器
+mkdir vue-webhook && cd vue-webhook && npm init -y
+yarn add nodemailer -S
+
+# 后端项目
+# GitHub 新建项目 vue-back & vue-front & vue-webhook
+cd ../vue-back
+git init
+git remote add origin git@github.com:kongfanteng/vue-back.git
 git push -u roigin master
 
 # 前端项目
@@ -438,37 +449,37 @@ cd vue-front
 git remote add origin git@.../vue-front.git
 git push -u roigin master
 
-# 阿里云申请 IP; 实例名称: github;
-# github 上填写 webhook 链接 http://...:4000/webhook
+# 阿里云申请 47.96.93.240; 实例名称: github;
+# github 上填写 webhook 链接 http://47.96.93.240:4000/webhook
 
 # 进入 github 阿里云服务器
-yum update
+yum update -y
 ## 安装 docker, 进行阿里云加速, 搜索 yum-utils & aliyuncs
 yum install git -y ## 安装 git
 # 生成公钥 搜索 ssh-keygen, 公钥复制到 github 仓库
 mkdir /usr/projects && cd /usr/projects
-git clone git@.../vue-back.git
-git clone git@.../vue-front.git
+git clone git@github.com:kongfanteng/vue-front.git
+git clone git@github.com:kongfanteng/vue-back.git
+git clone git@github.com:kongfanteng/vue-webhook.git
 # 安装 node 和 npm: 搜索 v16.17.0
 nrm use taobao
-# 阿里云开发对应端口 3000
-
-# 本地启动 vue-front 和 vue-back, 查看是否正确
+## 阿里云开放对应端口 3000
+## 本地启动 vue-front 和 vue-back, 查看是否正确
 ```
 
 ## 4、Docker
 
-### 4.1
+### 4.1 vue-webhook
 
 ```bash
-# cd /webhook
-vi webhook.js
+# 本地 vue-webhook
+cd ../vue-webhook && vi webhook.js
 const http = require('http')
 const server = http.createServer(function(req, res) {
   console.log('req, res:', req, res)
   if(req.method === 'POST' && req.url == '/webhook') {
     res.setHeader('Content-Type', 'application/json')
-    res.end(JSON.stringfiy({ok: true}))
+    res.end(JSON.stringify({ok: true}))
   } else {
     res.end('Not Found');
   }
@@ -476,14 +487,15 @@ const server = http.createServer(function(req, res) {
 server.listen(4000, () => {
   console.log('webhook 服务已经启动在 4000 端口！')
 })
-echo -e 'node_moudle\nlib\n.idea\n.package-lock.json\nDockerfile\n.dockerignore' > .gitignore
+
+echo -e 'node_modules\nlib\n.idea\n.package-lock.json\n.dockerignore' > .gitignore
 
 ## GitHub 新建仓库 vue-webhook
-git remote add origin git@.../vue-webhook.git
-git push -u roigin master
+git remote add origin git@github.com:kongfanteng/vue-webhook.git
+git a && git c && git p
 ```
 
-### 4.2
+### 4.2 vue-webhook
 
 ```bash
 # 阿里云服务器
@@ -491,7 +503,7 @@ git push -u roigin master
 cd /usr/projects && git clone git@.../vue-webhook.git
 node webhook.js
 
-# 本地 web-hook
+# 本地 vue-webhook
 sudo npm i pm2 -g
 vi package.json
 "script": {
@@ -507,28 +519,94 @@ cd /usr/projects/vue-webhook && git pull origin master
 vi ~/.gitconfig
 [alias]
   a = add -A
-  c = commit -m"msg$1"
+  c = commit -m"msg"
   p = push origin master
   pull = pull origin master
-  pa = c && git p && git p
 ```
 
-### 4.3
+### 4.3 vue-webhook
 
 ```bash
+# 阿里云服务器
+cd /usr/projects/vue-webhook && npm run start
 
+# 本地 vue-back
+git a && git c && git p
+
+# 本地 vue-webhook
+vi webhook.js
+if (req.method == 'POST' && req.url === '/webhook') {
+  const buffers = []
+  req.on('data', function (buffer) {
+    buffers.push(buffer);
+  });
+  req.on('end', function(buffer) {
+    const body = Buffer.concat(buffers)
+    const event = req.headers['x-github-event']; //evet = push
+    const signature = req.headers['x-hub-signature']
+  })
+  // ...
+}
 ```
 
-### 4.4
+### 4.4 vue-webhook
 
 ```bash
+vi webhook.js
+const crypto = require('crypto')
+const SECRET = '123456'
+const sign = (body) => `sha1=${ crypto.createHmac('sha1', SECRET).update(body).digest('hex') }`
 
+vi webhook.js
+if (signature !== sign(body)){
+  return res.end('Not Allowed')
+}
+
+git a && git c && git pu
+## 阿里云服务器拉取 git pull
+
+# 本地 vue-back
+cd ../vue-back && vi Dockerfile
+FROM node
+LABEL name="vue-back"
+LABEL version="1.0"
+COPY . /app
+WORKDIR /app
+RUN npm install
+EXPOSE 3000
+CMD npm start
+
+vi dockerignore
+.gitignore
+# Dockerfile
+node_modules
 ```
 
-### 4.5
+### 4.5 vue-back
 
 ```bash
+# 本地 vue-webhook
+cd ../vue-webhook && vi vue-back.sh
+#!/bin/bash
+WORK_PATH='/usr/projects/vue-back'
+cd $WORK_PATH
+echo "先清除老代码"
+git reset --hard origin/master
+git clean -f
+echo "拉取最新代码"
+git pull origin master
+echo "开始执行构建"
+docker build -t vue-back:1.0 .
+echo "停止旧容器并删除旧容器"
+docker stop vue-back-container
+docker rm vue-back-container
+echo "启动新容器"
+docker container run -p 3000:3000 --name vue-back-container -d vue-back:1.0
 
+# 阿里云部署
+cd /usr/projects/vue-webhook && sh vue-back.sh
+
+curl http://localhost:3000/api/users
 ```
 
 ## 5、Docker
@@ -536,13 +614,127 @@ vi ~/.gitconfig
 ### 5.1
 
 ```bash
+# 本地 vue-webhook
+cd ../vue-webhook && vi vue-front.sh
+#!/bin/bash
+WORK_PATH='/usr/projects/vue-front'
+cd $WORK_PATH
+echo "先清除老代码"
+git reset --hard origin/master
+git clean -f
+echo "拉取最新代码"
+git pull origin master
+echo "开始执行构建"
+docker build -t vue-front:1.0 .
+echo "停止旧容器并删除旧容器"
+docker stop vue-front-container
+docker rm vue-front-container
+echo "启动新容器"
+docker container run -p 80:80 --name vue-front-container -d vue-front:1.0
 
+# 本地 vue-front
+cd ../vue-front && vi Dockerfile
+FROM nginx
+LABEL name="vue-front"
+LABEL version="1.0"
+COPY ./dist /usr/share/nginx/html
+WORKDIR ./vue-front.conf /etc/nginx/conf.d
+EXPOSE 80
+
+vi vue-front.conf
+server {
+  listen 80;
+  server_name 47.96.93.240; // 填写的 ip
+  location / {
+    root /usr/share/nginx/html;
+    index index.html index.htm;
+    try_files $uri $uri/ /index.html;
+  }
+  location /api {
+    proxy_pass http://47.96.93.240:3000;
+  }
+}
+
+vi .dockerignore
+.gitignore
+# Dockerfile
+node_modules
+## 完成后提交 GitHub
+
+# 阿里云服务器
+cd /usr/projects/vue-webhook && sh vue-front.sh
+
+# 浏览器查看 http://47.96.93.240
 ```
 
 ### 5.2
 
 ```bash
+# 本地 vue-webhook
+vi webhook.js
+const { spawn } = require('child_process');
+...
+if (event == 'push') { // 开始部署
+  const payload = JSON.parse(body);
+  const child = spawn('sh', [`./${payload.repository.name}.sh`]);
+  child.stdout.on('data', function(buffer) {
+    buffers.push(buffer)
+  })
+  child.stdout.on('end', function(buffer) {
+    const log = Buffer.concat(buffers);
+    console.log('log:', log)
+  })
+}
 
+# 提交到阿里云查看
+
+# 本地 vue-front
+vi /src/App.js
+axios.get('/api/users')...
+
+# 本地 vue-webhook
+vi sendMail.js
+const nodemailer = require('nodemailer')
+const transporter = nodemailer.createTransporter({
+  service: 'qq',
+  port: 465,
+  secureConnection: true,
+  auth: {
+    user: '1228318390@qq.com',
+    pass: 'nlhmtanupfwnbagb',
+  }
+})
+function sendMail(message) {
+  const mailOptions = {
+    from: '"1228318390" <1228318390@qq.com>', // 发送地址
+    to: '1228318390@qq.com', // 接收者
+    subject: '部署通知', 
+    html: message, // 内容主体
+  };
+  transporter.sendMail(mailOptions, (error, info) => {
+    if(error) {
+      return console.log(error)
+    }
+    console.log(`Message sent: %s ${info.messageId}`)
+  })
+}
+module.exports = sendMail;
+
+vi webhook.js
+let sendMail = require('./sendMail')
+...
+child.stdout.on('end', function(buffer) {
+  const logs = Buffer.concat(buffers).toString();
+  sendMail(`
+    <h1>部署日期: ${new Date()}</h1>
+    <h1>部署人: ${payload.pusher.name}</h1>
+    <h1>部署邮箱: ${payload.pusher.email}</h1>
+    <h1>提交信息: ${ payload.head_commit && payload.head_commit.id }</h1>
+    <h1>部署日志: ${logs.replace("\r\n", "<br/>")}</h1>
+  `)
+})
+
+sudo npm i nodemailer -S
 ```
 
 ### 5.3
